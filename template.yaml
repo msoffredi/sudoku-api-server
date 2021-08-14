@@ -1,14 +1,19 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-    sudoku-api
-
-    Sudoku API Server using AWS API Gateway, Lambda functions, and DynamoDB
+Description: Sudoku API Server using AWS API Gateway, Lambda functions, and DynamoDB
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
     Function:
         Timeout: 3
+
+Parameters:
+    DomainName:
+        Type: String
+        Default: sudoku-api.soffredi.org
+    HostedZoneName:
+        Type: String
+        Default: soffredi.org.
 
 Resources:
     SudokuAPIFunction:
@@ -23,6 +28,31 @@ Resources:
                     Properties:
                         Path: /puzzle
                         Method: get
+
+    APIDomainName:
+        Type: AWS::ApiGateway::DomainName
+        Properties:
+            CertificateArn: arn:aws:acm:us-east-1:653284769887:certificate/a343fc90-7ad2-4761-8331-ddb604c99a1d
+            DomainName: !Ref DomainName
+
+    APIBasePathMapping:
+        Type: AWS::ApiGateway::BasePathMapping
+        Properties:
+            DomainName: !Ref APIDomainName
+            RestApiId: !Ref ServerlessRestApi
+            Stage: Prod
+
+    APIDomain:
+        Type: AWS::Route53::RecordSetGroup
+        Properties:
+            HostedZoneName: !Ref HostedZoneName
+            RecordSets:
+                - Name: !Ref DomainName
+                  Type: A
+                  AliasTarget:
+                      EvaluateTargetHealth: false
+                      DNSName: !GetAtt APIDomainName.DistributionDomainName
+                      HostedZoneId: !GetAtt APIDomainName.DistributionHostedZoneId
 
 Outputs:
     # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
