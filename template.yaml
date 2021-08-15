@@ -6,6 +6,12 @@ Description: Sudoku API Server using AWS API Gateway, Lambda functions, and Dyna
 Globals:
     Function:
         Timeout: 3
+    Api:
+        Cors:
+            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowHeaders: "'content-type'"
+            AllowOrigin: "'*'"
+            AllowCredentials: "'*'"
 
 Parameters:
     DomainName:
@@ -26,8 +32,10 @@ Resources:
                 SudokuAPI:
                     Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
                     Properties:
-                        Path: /puzzle
-                        Method: get
+                        # Path: /puzzles
+                        # Method: get
+                        Path: '/{proxy+}'
+                        Method: ANY
 
     APIDomainName:
         Type: AWS::ApiGateway::DomainName
