@@ -41,8 +41,13 @@ const solutions = {
     ],
 };
 
-const game = {
+const game1 = {
     start: games.easy1,
+    solution: solutions.solutionEasy1
+};
+
+const game2 = {
+    start: games.almostFinished1,
     solution: solutions.solutionEasy1
 };
 
@@ -62,8 +67,11 @@ exports.lambdaHandler = async (event, context) => {
     try {
         // const ret = await axios(url);
         response = {
-            'statusCode': 200,
-            'body': JSON.stringify([game])
+            statusCode: 200,
+            headers: {
+                "access-control-allow-origin": "*"
+            },
+            body: JSON.stringify([game1, game2])
         }
     } catch (err) {
         console.log(err);
