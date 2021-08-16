@@ -28,13 +28,15 @@ Resources:
             CodeUri: sudoku-api/
             Handler: app.lambdaHandler
             Runtime: nodejs14.x
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref DynamoDBTable
             Events:
                 SudokuAPI:
                     Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
                     Properties:
-                        # Path: /puzzles
+                        Path: /puzzles/{page}
                         # Method: get
-                        Path: '/{proxy+}'
                         Method: ANY
 
     APIDomainName:
@@ -61,6 +63,23 @@ Resources:
                       EvaluateTargetHealth: false
                       DNSName: !GetAtt APIDomainName.DistributionDomainName
                       HostedZoneId: !GetAtt APIDomainName.DistributionHostedZoneId
+
+    DynamoDBTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            BillingMode: PAY_PER_REQUEST
+            TableName: sudoku-puzzles
+            AttributeDefinitions:
+                - AttributeName: id
+                  AttributeType: S
+            KeySchema:
+                - AttributeName: id
+                  KeyType: HASH
+            # ProvisionedThroughput:
+            #     ReadCapacityUnits: 5
+            #     WriteCapacityUnits: 5
+            # StreamSpecification:
+            #     StreamViewType: NEW_IMAGE
 
 Outputs:
     # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

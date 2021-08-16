@@ -1,6 +1,5 @@
-// const axios = require('axios')
-// const url = 'http://checkip.amazonaws.com/';
-let response;
+const AWS = require("aws-sdk");
+const dynamo = new AWS.DynamoDB.DocumentClient();
 
 const games = {
     easy1: [
@@ -64,19 +63,31 @@ const game2 = {
  * 
  */
 exports.lambdaHandler = async (event, context) => {
+    let body;
+    let statusCode = 200;
+    const headers = {
+        "Content-Type": "application/json",
+        "access-control-allow-origin": "*"
+    };
+
     try {
-        // const ret = await axios(url);
-        response = {
-            statusCode: 200,
-            headers: {
-                "access-control-allow-origin": "*"
-            },
-            body: JSON.stringify([game1, game2])
+        if (event.httpMethod === 'GET' && event.resource === '/puzzles/{page}') {
+            const response = await dynamo.scan({ TableName: 'sudoku-puzzles' }).promise();
+            body = response.Items;
+        } else {
+            throw new Error(`Unsupported route: "${event.resource}" on ${event.httpMethod} method.`);
         }
     } catch (err) {
         console.log(err);
-        return err;
+        statusCode = 400;
+        body = err.message;
+    } finally {
+        body = JSON.stringify(body);
     }
 
-    return response
+    return {
+        statusCode,
+        body,
+        headers
+    };
 };
