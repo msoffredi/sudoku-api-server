@@ -1,5 +1,5 @@
 const AWS = require("aws-sdk");
-const dynamo = new AWS.DynamoDB.DocumentClient();
+const ddb = new AWS.DynamoDB();
 
 const games = {
     easy1: [
@@ -50,6 +50,10 @@ const game2 = {
     solution: solutions.solutionEasy1
 };
 
+// We use capitalized name here to easy include in objects
+const TableName = 'sudoku-puzzles';
+const DefaultPageSize = 100;
+
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -65,17 +69,40 @@ const game2 = {
 exports.lambdaHandler = async (event, context) => {
     let body;
     let statusCode = 200;
+    let response;
+
+    const unsopported = `Unsupported route: "${event.resource}" on ${event.httpMethod} method.`;
+
     const headers = {
         "Content-Type": "application/json",
         "access-control-allow-origin": "*"
     };
 
     try {
-        if (event.httpMethod === 'GET' && event.resource === '/puzzles/{page}') {
-            const response = await dynamo.scan({ TableName: 'sudoku-puzzles' }).promise();
-            body = response.Items;
+        if (event.httpMethod === 'GET') {
+            switch (event.resource) {
+                case '/puzzles/{page}':
+                    const start = event.pathParameters.start | '1';
+                    response = await ddb.scan({ 
+                        TableName,
+                        ExclusiveStartKey: { id: { S: start } },
+                        Limit: DefaultPageSize
+                    }).promise();
+                    body = response.Items;
+                    break;
+                case '/puzzles':
+                    response = await ddb.describeTable({ TableName }).promise();
+                    body = {
+                        ItemCount: response.Table.ItemCount,
+                        DefaultPageSize,
+                        Pages: Math.ceil(response.Table.ItemCount/DefaultPageSize)
+                    }
+                    break;
+                default:
+                    throw new Error(unsopported);
+            }
         } else {
-            throw new Error(`Unsupported route: "${event.resource}" on ${event.httpMethod} method.`);
+            throw new Error(unsopported);
         }
     } catch (err) {
         console.log(err);

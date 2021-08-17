@@ -8,7 +8,7 @@ Globals:
         Timeout: 3
     Api:
         Cors:
-            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowMethods: "'GET,OPTIONS'"
             AllowHeaders: "'content-type'"
             AllowOrigin: "'*'"
             AllowCredentials: "'*'"
@@ -32,12 +32,17 @@ Resources:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref DynamoDBTable
             Events:
-                SudokuAPI:
-                    Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+                SudokuAPIPuzzles:
+                    Type: Api
                     Properties:
-                        Path: /puzzles/{page}
-                        # Method: get
-                        Method: ANY
+                        Path: /puzzles/{start}
+                        Method: get
+                        # Method: ANY
+                SudokuAPIInfo:
+                    Type: Api
+                    Properties:
+                        Path: /puzzles
+                        Method: get
 
     APIDomainName:
         Type: AWS::ApiGateway::DomainName
@@ -85,7 +90,7 @@ Outputs:
     # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
     # Find out more about other implicit resources you can reference within SAM
     # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-    SudokuAPI:
+    SudokuAPIPuzzles:
         Description: 'API Gateway endpoint URL for Prod stage for Hello World function'
         Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/puzzle/'
     SudokuAPIFunction:
