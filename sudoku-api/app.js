@@ -81,7 +81,7 @@ exports.lambdaHandler = async (event, context) => {
     try {
         if (event.httpMethod === 'GET') {
             switch (event.resource) {
-                case '/puzzles/{page}':
+                case '/puzzles/{start}':
                     const start = event.pathParameters.start | '1';
                     response = await ddb.scan({ 
                         TableName,
