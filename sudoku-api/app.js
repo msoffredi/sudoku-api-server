@@ -88,7 +88,13 @@ exports.lambdaHandler = async (event, context) => {
                         ExclusiveStartKey: { id: { S: start.toString() } },
                         Limit: DefaultPageSize
                     }).promise();
-                    body = response.Items;
+                    body = response.Items.map((item) => {
+                        return {
+                            puzzle: item.puzzle.S,
+                            solution: item.solution.S,
+                            id: item.id.S
+                        };
+                    });
                     break;
                 case '/puzzles':
                     response = await ddb.describeTable({ TableName }).promise();
