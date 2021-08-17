@@ -85,7 +85,7 @@ exports.lambdaHandler = async (event, context) => {
                     const start = event.pathParameters.start | '1';
                     response = await ddb.scan({ 
                         TableName,
-                        ExclusiveStartKey: { id: { S: start } },
+                        ExclusiveStartKey: { id: { S: start.toString() } },
                         Limit: DefaultPageSize
                     }).promise();
                     body = response.Items;
