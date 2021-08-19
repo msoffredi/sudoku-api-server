@@ -37,13 +37,21 @@ Resources:
                     Properties:
                         Path: /puzzles/{start}
                         Method: get
-                        # Method: ANY
+                SudokuAPIPuzzlesV0:
+                    Type: Api
+                    Properties:
+                        Path: /v0/puzzles
+                        Method: get
                 SudokuAPIInfo:
                     Type: Api
                     Properties:
                         Path: /puzzles
                         Method: get
-
+                SudokuAPIInfoV0:
+                    Type: Api
+                    Properties:
+                        Path: /v0/info
+                        Method: get
     APIDomainName:
         Type: AWS::ApiGateway::DomainName
         Properties:

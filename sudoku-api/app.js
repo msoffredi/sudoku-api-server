@@ -83,8 +83,13 @@ exports.lambdaHandler = async (event, context) => {
         if (event.httpMethod === 'GET') {
             switch (event.resource) {
                 case '/puzzles/{start}':
+                case '/v0/puzzles':
                     if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
-                        const start = event.pathParameters.start | '1';
+                        const start =
+                            event.queryStringParameters.start ??
+                            event.pathParameters.start ??
+                            '1';
+
                         response = await ddb
                             .scan({
                                 TableName,
@@ -108,6 +113,7 @@ exports.lambdaHandler = async (event, context) => {
                     break;
 
                 case '/puzzles':
+                case '/v0/info':
                     if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
                         response = await ddb
                             .describeTable({ TableName })
