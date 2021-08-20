@@ -84,51 +84,12 @@ exports.lambdaHandler = async (event, context) => {
             switch (event.resource) {
                 case '/puzzles/{start}':
                 case '/v0/puzzles':
-                    if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
-                        const start = event.queryStringParameters
-                            ? event.queryStringParameters.start ?? '1'
-                            : event.pathParameters.start ?? '1';
-
-                        response = await ddb
-                            .scan({
-                                TableName,
-                                ExclusiveStartKey: {
-                                    id: { S: start.toString() },
-                                },
-                                Limit: DefaultPageSize,
-                            })
-                            .promise();
-                    } else {
-                        response = localResponse;
-                    }
-
-                    body = response.Items.map((item) => {
-                        return {
-                            puzzle: item.puzzle.S,
-                            solution: item.solution.S,
-                            id: item.id.S,
-                        };
-                    });
+                    body = getPuzzles(event);
                     break;
 
                 case '/puzzles':
                 case '/v0/info':
-                    if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
-                        response = await ddb
-                            .describeTable({ TableName })
-                            .promise();
-                    } else {
-                        // Only on local environments, to avoid hitting DynamoDB
-                        response = { Table: { ItemCount: 12345 } };
-                    }
-
-                    body = {
-                        ItemCount: response.Table.ItemCount,
-                        DefaultPageSize,
-                        Pages: Math.ceil(
-                            response.Table.ItemCount / DefaultPageSize,
-                        ),
-                    };
+                    body = getInfo();
                     break;
 
                 default:
@@ -149,5 +110,48 @@ exports.lambdaHandler = async (event, context) => {
         statusCode,
         body,
         headers,
+    };
+};
+
+const getPuzzles = (event) => {
+    if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
+        const start = event.queryStringParameters
+            ? event.queryStringParameters.start ?? '1'
+            : event.pathParameters.start ?? '1';
+
+        response = await ddb
+            .scan({
+                TableName,
+                ExclusiveStartKey: {
+                    id: { S: start.toString() },
+                },
+                Limit: DefaultPageSize,
+            })
+            .promise();
+    } else {
+        response = localResponse;
+    }
+
+    return response.Items.map((item) => {
+        return {
+            puzzle: item.puzzle.S,
+            solution: item.solution.S,
+            id: item.id.S,
+        };
+    });
+};
+
+const getInfo = () => {
+    if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
+        response = await ddb.describeTable({ TableName }).promise();
+    } else {
+        // Only on local environments, to avoid hitting DynamoDB
+        response = { Table: { ItemCount: 12345 } };
+    }
+
+    return {
+        ItemCount: response.Table.ItemCount,
+        DefaultPageSize,
+        Pages: Math.ceil(response.Table.ItemCount / DefaultPageSize),
     };
 };
