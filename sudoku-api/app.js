@@ -85,10 +85,9 @@ exports.lambdaHandler = async (event, context) => {
                 case '/puzzles/{start}':
                 case '/v0/puzzles':
                     if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
-                        const start =
-                            event.queryStringParameters.start ??
-                            event.pathParameters.start ??
-                            '1';
+                        const start = event.queryStringParameters
+                            ? event.queryStringParameters.start ?? '1'
+                            : event.pathParameters.start ?? '1';
 
                         response = await ddb
                             .scan({
