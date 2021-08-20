@@ -32,20 +32,10 @@ Resources:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref DynamoDBTable
             Events:
-                SudokuAPIPuzzles:
-                    Type: Api
-                    Properties:
-                        Path: /puzzles/{start}
-                        Method: get
                 SudokuAPIPuzzlesV0:
                     Type: Api
                     Properties:
                         Path: /v0/puzzles
-                        Method: get
-                SudokuAPIInfo:
-                    Type: Api
-                    Properties:
-                        Path: /puzzles
                         Method: get
                 SudokuAPIInfoV0:
                     Type: Api

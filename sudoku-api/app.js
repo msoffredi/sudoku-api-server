@@ -32,12 +32,10 @@ exports.lambdaHandler = async (event, context) => {
     try {
         if (event.httpMethod === 'GET') {
             switch (event.resource) {
-                case '/puzzles/{start}':
                 case '/v0/puzzles':
                     body = await getPuzzles(event);
                     break;
 
-                case '/puzzles':
                 case '/v0/info':
                     body = await getInfo();
                     break;
