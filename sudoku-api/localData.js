@@ -1,3 +1,11 @@
+const createPuzzleObj = (puzzle, solution, id) => {
+    return {
+        puzzle: { S: puzzle },
+        solution: { S: solution },
+        id: { S: id },
+    };
+};
+
 const localData = {
     puzzlesResponse: {
         Items: [
@@ -31,14 +39,6 @@ const localData = {
     infoResponse: {
         Table: { ItemCount: 12345 },
     },
-};
-
-const createPuzzleObj = (puzzle, solution, id) => {
-    return {
-        puzzle: { S: puzzle },
-        solution: { S: solution },
-        id: { S: id },
-    };
 };
 
 module.exports = localData;
