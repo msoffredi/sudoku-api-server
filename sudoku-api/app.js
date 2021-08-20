@@ -70,7 +70,6 @@ const DefaultPageSize = 100;
 exports.lambdaHandler = async (event, context) => {
     let body;
     let statusCode = 200;
-    let response;
 
     const unsopported = `Unsupported route: "${event.resource}" on ${event.httpMethod} method.`;
 
@@ -84,12 +83,12 @@ exports.lambdaHandler = async (event, context) => {
             switch (event.resource) {
                 case '/puzzles/{start}':
                 case '/v0/puzzles':
-                    body = getPuzzles(event);
+                    body = await getPuzzles(event);
                     break;
 
                 case '/puzzles':
                 case '/v0/info':
-                    body = getInfo();
+                    body = await getInfo();
                     break;
 
                 default:
@@ -113,7 +112,9 @@ exports.lambdaHandler = async (event, context) => {
     };
 };
 
-const getPuzzles = (event) => {
+const getPuzzles = async (event) => {
+    let response;
+
     if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
         const start = event.queryStringParameters
             ? event.queryStringParameters.start ?? '1'
@@ -141,7 +142,9 @@ const getPuzzles = (event) => {
     });
 };
 
-const getInfo = () => {
+const getInfo = async () => {
+    let response;
+
     if (process.env.AWS_LAMBDA_INITIALIZATION_TYPE) {
         response = await ddb.describeTable({ TableName }).promise();
     } else {
